@@ -2,11 +2,6 @@ import mongoose , {Schema} from "mongoose";
 
 const patientSchema = new Schema(
     {
-        user: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            required: true
-        },
         dateOfBirth: {
             type: String,
             require: true
@@ -34,18 +29,12 @@ const patientSchema = new Schema(
             ]
         },
         medicalDocuments: {
-            type: [
-                {
-                    type: String //cloudinary url
-                }
-            ]
+            type: Map,
+            of: [String] //cloudinry url
         },
         medicalHistory: {
-            type: [
-                {
-                    type: String //cloudinary url
-                }
-            ]
+            type: Map,
+            of: [String] //cloudinry url
         }
     }
 )

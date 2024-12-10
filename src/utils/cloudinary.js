@@ -49,4 +49,30 @@ const deleteFromCloudinary = async(fileId) => {
     }
 }
 
-export {uploadOnCloudinary , deleteFromCloudinary}
+const uploadFileInAFolder = async(localFilePath , folderName) => {
+    try {
+        if(!localFilePath) {
+            return null
+        }
+
+        const response = await cloudinary.uploader.upload(
+            localFilePath,
+            {
+                folder: folderName,
+                resource_type: "auto"
+            },
+            
+        )
+        console.log("file is uploaded on cloudinary" , response.url)
+        fs.unlinkSync(localFilePath)
+
+        return response
+    }
+    catch(error) {
+        fs.unlinkSync(localFilePath)
+
+        return null
+    }
+}
+
+export {uploadOnCloudinary , deleteFromCloudinary , uploadFileInAFolder}

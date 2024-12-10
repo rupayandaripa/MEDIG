@@ -4,6 +4,11 @@ import jwt from 'jsonwebtoken'
 
 const userSchema = new Schema(
     {
+        entityId: {
+            type: mongoose.Schema.Types.ObjectId,
+            refPath: "role",
+            required: true
+        },
         email: {
             type: String,
             required: true,
@@ -35,7 +40,7 @@ const userSchema = new Schema(
         role: {
             type: String,
             required: true,
-            enum: ['doctor' , 'patient']
+            enum: ['Doctor' , 'Patient']
         }
     },
     {

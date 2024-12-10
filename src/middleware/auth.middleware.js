@@ -20,6 +20,7 @@ export const verifyJWT = asyncHandler(async(req,res,next) => {
         }
 
         req.user = user
+        //console.log("Hello")
         next()
     }
     catch(error) {

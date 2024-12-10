@@ -4,11 +4,6 @@ import bcrypt from 'bcrypt'
 
 const doctorSchema = new Schema(
     {
-        user: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            required: true
-        },
         degree: {
             type: String,
             required: true,
@@ -41,19 +36,19 @@ const doctorSchema = new Schema(
             type: [
                 {
                     type: String,
-                    required: true
+                    //required: true
                 }
             ]
         },
         availableOrNot: {
             type: Boolean,
-            required: true
+            //required: true
         },
         weeklyAvailability: {
             type: [
                 {
                     type: String,
-                    required: true
+                    //required: true
                 }
             ]
         }

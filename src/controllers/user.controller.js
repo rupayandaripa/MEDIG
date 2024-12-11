@@ -624,6 +624,7 @@ const changeCurrentAvailability = asyncHandler(async(req,res) => {
                 availableOrNot: availableOrNot
             }
         },
+        
         {
             new: true
         }

@@ -41,8 +41,9 @@ const doctorSchema = new Schema(
             ]
         },
         availableOrNot: {
-            type: Boolean,
-            //required: true
+            type: String,
+            required: true,
+            default: 'true'
         },
         weeklyAvailability: {
             type: [

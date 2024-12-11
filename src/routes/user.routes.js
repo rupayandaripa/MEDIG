@@ -13,7 +13,9 @@ import {registerUser ,
     uploadDocument ,
     uploadPrescription,
     sendEmailWithAttachment,
-sendEmailWithAttachment1} from '../controllers/user.controller.js'
+sendEmailWithAttachment1,
+getOtherDoctorsSchedule,
+changeCurrentAvailability} from '../controllers/user.controller.js'
 
     import { ConfidentialClientApplication } from '@azure/msal-node';
 
@@ -121,12 +123,35 @@ router.route("/profile-picture").patch(
     upload.single("profilePicture"),
     updateUserProfilePicture
 )
+router.route('/change-password').post(
+    verifyJWT,
+    upload.none(),
+    changeCurrentPassword
+)
+
+router.route('/get-current-user').get(
+    verifyJWT,
+    getCurrentUser
+)
 
 router.route('/patient/upload-document').patch(
     verifyJWT,
     checkRole('Patient'),
     upload.single('document'),
     uploadDocument
+)
+
+router.route('/other-doctor-schedule').get(
+    verifyJWT,
+    checkRole('Doctor'),
+    getOtherDoctorsSchedule
+)
+
+router.route('/availability').post(
+    verifyJWT,
+    checkRole('Doctor'),
+    upload.none(),
+    changeCurrentAvailability
 )
 
 router.route('/doctor/update-medical-history').patch(

@@ -7,9 +7,9 @@ import jwt from 'jsonwebtoken'
 import { Patient } from "../models/patients.model.js";
 import { Doctor } from "../models/doctors.model.js";
 import nodemailer from 'nodemailer'
-import { Client } from '@microsoft/microsoft-graph-client';
 import 'isomorphic-fetch';
 import fs from 'fs/promises';
+import { scheduler } from "timers/promises";
 
 
 const generateAccessAndRefreshTokens = async(userId) => {
@@ -276,7 +276,8 @@ const refreshAccessToken = asyncHandler(async(req,res) => {
 })
 
 const changeCurrentPassword = asyncHandler(async(req,res) => {
-    const {oldPassword , newPasssword} = req.body
+    console.log(req.body)
+    const {oldPassword , newPassword} = req.body
 
     const user = await User.findById(req.user?._id)
     const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
@@ -285,7 +286,7 @@ const changeCurrentPassword = asyncHandler(async(req,res) => {
         throw new ApiError(400 , "Invalid Password")
     }
 
-    user.password = newPasssword
+    user.password = newPassword
 
     await user.save({validateBeforeSave: false})
 
@@ -570,6 +571,75 @@ const sendEmailWithAttachment1 = asyncHandler(async (req, res) => {
     }
 });
 
+const getOtherDoctorsSchedule = asyncHandler(async(req,res) => {
+
+    const results = await User.aggregate([
+        {
+            $match: {role: 'Doctor'}
+        },
+        {
+            $lookup: {
+                from: 'doctors',
+                localField: 'entityId',
+                foreignField: '_id',
+                as: 'doctorDetails'
+            }
+        },
+        {
+            $unwind: '$doctorDetails'
+        },
+        {
+            $project: {
+                _id: 0,
+                fullName: '$fullName',
+                'availableOrNot': '$doctorDetails.availableOrNot',
+                'availableTime': '$doctorDetails.availableTime',
+                'weeklyAvailability': '$doctorDetails.weeklyAvailability'
+            }
+        }
+    ])
+
+    if(!results) {
+        throw new ApiError(404 , "Details not found!!")
+    }
+
+    return res
+           .status(201)
+           .json(new ApiResponse(201 , results , "Data fetched successfully"))
+})
+
+const changeCurrentAvailability = asyncHandler(async(req,res) => {
+    const {availableOrNot} = req.body
+
+    console.log(availableOrNot)
+
+    if(!availableOrNot) {
+        throw new ApiError(401 , "Data not fetched")
+    }
+
+    const result = await Doctor.findByIdAndUpdate(
+        req.user.entityId,
+        {
+            $set: {
+                availableOrNot: availableOrNot
+            }
+        },
+        {
+            new: true
+        }
+    )
+
+    if(!result) {
+        throw new ApiError(401 , "Error in updating the value")
+    }
+
+    return res
+           .status(201)
+           .json(new ApiResponse(201 , result , "Availability updated successfully"))
+
+
+})
+
 
 export {
     registerUser , 
@@ -583,7 +653,9 @@ export {
     uploadDocument ,
     uploadPrescription,
     sendEmailWithAttachment,
-    sendEmailWithAttachment1
+    sendEmailWithAttachment1,
+    getOtherDoctorsSchedule,
+    changeCurrentAvailability
     
 }
 

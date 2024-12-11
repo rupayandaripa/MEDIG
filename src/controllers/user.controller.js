@@ -543,6 +543,7 @@ const sendEmailWithAttachment1 = asyncHandler(async (req, res) => {
             }
         };
 
+
         // Send email using Microsoft Graph
         const info = await client.api('/me/sendMail')
             .post(email);
@@ -659,6 +660,8 @@ export {
     changeCurrentAvailability
     
 }
+
+//dummy comment
 
 
 

@@ -1,25 +1,28 @@
 import { Router } from "express";
-import {upload} from '../middleware/multer.middleware.js'
-import {verifyJWT} from '../middleware/auth.middleware.js'
+import { upload } from '../middleware/multer.middleware.js'
+import { verifyJWT } from '../middleware/auth.middleware.js'
 
-import {registerUser , 
-    loginUser , 
-    logoutUser, 
-    checkRole , 
-    refreshAccessToken , 
-    changeCurrentPassword , 
-    getCurrentUser , 
-    updateUserProfilePicture , 
-    uploadDocument ,
+import {
+    registerUser,
+    loginUser,
+    logoutUser,
+    checkRole,
+    refreshAccessToken,
+    changeCurrentPassword,
+    getCurrentUser,
+    updateUserProfilePicture,
+    uploadDocument,
     uploadPrescription,
     sendEmailWithAttachment,
-sendEmailWithAttachment1,
-getOtherDoctorsSchedule,
-changeCurrentAvailability} from '../controllers/user.controller.js'
+    sendEmailWithAttachment1,
+    getOtherDoctorsSchedule,
+    changeCurrentAvailability,
+    noOfPatientsInLast7Days
+} from '../controllers/user.controller.js'
 
-    import { ConfidentialClientApplication } from '@azure/msal-node';
+import { ConfidentialClientApplication } from '@azure/msal-node';
 
-    import { asyncHandler } from "../utils/asyncHandler.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 
 
@@ -43,12 +46,12 @@ router.route('/auth/login').get(
     asyncHandler(async (req, res) => {
         try {
             const authUrl = await confidentialClient.getAuthCodeUrl({
-                scopes: ["Mail.Send", "User.Read" , "SMTP.Send"],
+                scopes: ["Mail.Send", "User.Read", "SMTP.Send"],
                 redirectUri: msalConfig.auth.redirectUri,
             });
             console.log(authUrl)
             // Redirect the user directly to the auth URL instead of sending it in JSON
-            return res.status(200).json({authUrl})
+            return res.status(200).json({ authUrl })
         } catch (error) {
             console.error("Error generating auth URL:", error);
             return res.status(500).send("Failed to generate authentication URL");
@@ -71,7 +74,7 @@ router.route('/auth/callback').get(
                 code,
                 scopes: [
                     //"SMTP.Send",
-                    "Mail.Send", 
+                    "Mail.Send",
                     "User.Read",
                 ],
                 redirectUri: msalConfig.auth.redirectUri,
@@ -84,7 +87,7 @@ router.route('/auth/callback').get(
                 req.session.refreshToken = tokenResponse.refreshToken;
             }
 
-            console.log("AccessToken: " , req.session.accessToken)
+            console.log("AccessToken: ", req.session.accessToken)
 
             return res.redirect("/doctor/send-mail");
         } catch (error) {
@@ -100,7 +103,7 @@ router.route('/doctor/send-mail').post(
     upload.single('prescription'),
     sendEmailWithAttachment
     //sendEmailWithAttachment1
-    
+
 )
 
 router.route("/register").post(
@@ -110,13 +113,13 @@ router.route("/register").post(
             maxCount: 1
         }
     ]),
-    registerUser   
+    registerUser
 )
 
-router.route("/login").post(upload.none() , loginUser)
+router.route("/login").post(upload.none(), loginUser)
 
 //secured routes
-router.route('/logout').post(verifyJWT , logoutUser)
+router.route('/logout').post(verifyJWT, logoutUser)
 router.route("/refresh-token").post(refreshAccessToken)
 router.route("/profile-picture").patch(
     verifyJWT,
@@ -159,6 +162,13 @@ router.route('/doctor/update-medical-history').patch(
     checkRole('Doctor'),
     upload.single('prescription'),
     uploadPrescription
+)
+
+router.route('/update-patient-count').patch(
+    verifyJWT,
+    checkRole('Doctor'),
+    upload.none(),
+    noOfPatientsInLast7Days
 )
 
 

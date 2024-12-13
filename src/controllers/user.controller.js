@@ -642,6 +642,41 @@ const changeCurrentAvailability = asyncHandler(async(req,res) => {
 
 })
 
+const noOfPatientsInLast7Days = asyncHandler(async(req,res) => {
+
+    const {patientCount} = req.body
+
+    if(!patientCount) {
+        throw new ApiError(404 , "Count not found")
+    }
+
+    const doctor = await Doctor.findById(req.user.entityId)
+
+    if(!doctor) {
+        throw new ApiError(401 , "Doctor not found")
+    }
+
+    const noOfPatientsInLast7Days = doctor.noOfPatientsInLast7Days || []
+
+    if(noOfPatientsInLast7Days.length == 7) {
+        noOfPatientsInLast7Days.shift()
+    }
+
+    noOfPatientsInLast7Days.push(patientCount)
+
+    doctor.noOfPatientsInLast7Days = noOfPatientsInLast7Days
+
+    const response = await doctor.save()
+
+    if(!response) {
+        throw new ApiError(401 , "Patient count was not updated!!")
+    }
+
+    return res
+           .status(201)
+           .json(new ApiResponse(201 , response , "Successfully updated the patient count"))
+})
+
 
 export {
     registerUser , 
@@ -657,7 +692,8 @@ export {
     sendEmailWithAttachment,
     sendEmailWithAttachment1,
     getOtherDoctorsSchedule,
-    changeCurrentAvailability
+    changeCurrentAvailability,
+    noOfPatientsInLast7Days
     
 }
 

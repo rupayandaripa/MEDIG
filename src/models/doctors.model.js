@@ -1,6 +1,4 @@
 import mongoose, {Schema} from "mongoose";
-import jwt from 'jsonwebtoken'
-import bcrypt from 'bcrypt'
 
 const doctorSchema = new Schema(
     {
@@ -21,7 +19,7 @@ const doctorSchema = new Schema(
             required: true
         },
         bloodGroup: {
-            type: String,
+            type: String, 
             required: true
         },
         availableTime: {

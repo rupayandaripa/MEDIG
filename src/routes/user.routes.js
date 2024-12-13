@@ -17,7 +17,8 @@ import {
     sendEmailWithAttachment1,
     getOtherDoctorsSchedule,
     changeCurrentAvailability,
-    noOfPatientsInLast7Days
+    noOfPatientsInLast7Days,
+    changeWeeklySchedule
 } from '../controllers/user.controller.js'
 
 import { ConfidentialClientApplication } from '@azure/msal-node';
@@ -169,6 +170,13 @@ router.route('/update-patient-count').patch(
     checkRole('Doctor'),
     upload.none(),
     noOfPatientsInLast7Days
+)
+
+router.route('/change-weekly-schedule').patch(
+    verifyJWT,
+    checkRole('Doctor'),
+    upload.none(),
+    changeWeeklySchedule
 )
 
 

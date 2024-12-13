@@ -12,6 +12,7 @@ import fs from 'fs/promises';
 import { scheduler } from "timers/promises";
 
 
+
 const generateAccessAndRefreshTokens = async(userId) => {
     try {
         const user = await User.findById(userId)
@@ -677,6 +678,38 @@ const noOfPatientsInLast7Days = asyncHandler(async(req,res) => {
            .json(new ApiResponse(201 , response , "Successfully updated the patient count"))
 })
 
+const changeWeeklySchedule = asyncHandler(async(req,res) => {
+    const {day , details} = req.body
+
+    if(!day) {
+        throw new ApiError(401 , "Insufficient data: Day not specified!!")
+    }
+
+    if(!details) {
+        throw new ApiError(401 , "Insufficient data: details not specified!!")
+    }
+
+    const doctor = await Doctor.findById(req.user.entityId)
+
+    if(!doctor) {
+        throw new ApiError(401 , "Doctor details not found!!")
+    }
+
+    const weeklyAvailability = doctor.weeklyAvailability || ["" , "" , "" , "" , "" , "" , ""]
+
+    weeklyAvailability[day] = details
+
+    const response = await doctor.save()
+
+    if(!response) {
+        throw new ApiError(401 , "Data is not saved")
+    }
+
+    return res
+           .status(201)
+           .json(new ApiResponse(201 , response , "weekly availability updated successfully!!"))
+})
+
 
 export {
     registerUser , 
@@ -693,7 +726,8 @@ export {
     sendEmailWithAttachment1,
     getOtherDoctorsSchedule,
     changeCurrentAvailability,
-    noOfPatientsInLast7Days
+    noOfPatientsInLast7Days,
+    changeWeeklySchedule
     
 }
 

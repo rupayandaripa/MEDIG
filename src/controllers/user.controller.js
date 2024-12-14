@@ -120,19 +120,19 @@ const registerUser = asyncHandler(async(req,res) => {
 
 const loginUser = asyncHandler(async(req , res) => {
 
-    console.log("Request headers:", req.headers);
-    console.log("Content-Type:", req.headers['content-type']);
-    console.log("Full request body:", req.body);
+    // console.log("Request headers:", req.headers);
+    // console.log("Content-Type:", req.headers['content-type']);
+    // console.log("Full request body:", req.body);
     
-    const {email, fullName, password} = req.body
-    console.log("Extracted values:", {email, fullName, password});
+    const {email, password} = req.body
+    //console.log("Extracted values:", {email, fullName, password});
 
-    if(!fullName && !email) {
+    if(!email) {
         throw new ApiError(400 , "username or password is required")
     }
 
     const user = await User.findOne({
-        $or: [{fullName} , {email}]
+        $or: [{email}]
     })
 
     if(!user) {
@@ -301,6 +301,20 @@ const getCurrentUser = asyncHandler(async(req,res) => {
     return res
     .status(200)
     .json(new ApiResponse(200 , req.user , "User details fetched successfully"))
+})
+
+const getDoctorDetails = asyncHandler(async(req,res) => {
+    const entityId = req.user.entityId
+
+    const response = await Doctor.findById(entityId)
+
+    if(!response) {
+        throw new ApiError(404 , "Doctor not found")
+    }
+
+    return res
+           .status(201)
+           .json(new ApiResponse(201 , response , "Data fetched successfully"))
 })
 
 const updateUserProfilePicture = asyncHandler(async(req,res) => {
@@ -727,7 +741,8 @@ export {
     getOtherDoctorsSchedule,
     changeCurrentAvailability,
     noOfPatientsInLast7Days,
-    changeWeeklySchedule
+    changeWeeklySchedule,
+    getDoctorDetails
     
 }
 

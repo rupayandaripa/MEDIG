@@ -18,7 +18,8 @@ import {
     getOtherDoctorsSchedule,
     changeCurrentAvailability,
     noOfPatientsInLast7Days,
-    changeWeeklySchedule
+    changeWeeklySchedule,
+    getDoctorDetails
 } from '../controllers/user.controller.js'
 
 import { ConfidentialClientApplication } from '@azure/msal-node';
@@ -177,6 +178,12 @@ router.route('/change-weekly-schedule').patch(
     checkRole('Doctor'),
     upload.none(),
     changeWeeklySchedule
+)
+
+router.route('/get-doctor-details').get(
+    verifyJWT,
+    checkRole('Doctor'),
+    getDoctorDetails
 )
 
 

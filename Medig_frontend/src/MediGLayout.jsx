@@ -31,4 +31,24 @@ function MediGLayout() {
 
 }
 
-export default MediGLayout;
+function MediGLayout2() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const mappedData = JSON.parse(localStorage.getItem('mappedData'));
+    if (mappedData) {
+      dispatch(changeData(mappedData));
+    }
+  }, []);
+  return (
+    <div className="flex flex-col h-screen">
+      <MedicalHeader />
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-200 ">
+          <Outlet />
+        </main>
+    </div>
+  );
+}
+
+export {MediGLayout , MediGLayout2};

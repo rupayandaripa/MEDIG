@@ -59,7 +59,7 @@ const uploadFileInAFolder = async(localFilePath , folderName) => {
             localFilePath,
             {
                 folder: folderName,
-                resource_type: "auto"
+                resource_type: "raw"
             },
             
         )

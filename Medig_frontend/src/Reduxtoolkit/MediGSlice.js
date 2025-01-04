@@ -2,6 +2,7 @@ import {createSlice} from '@reduxjs/toolkit'
 
 const initialState = {
     fullName: null,
+    email: null,
     profilePicture: null,
     gender: null,
     role: null,
@@ -13,7 +14,8 @@ const initialState = {
     availableTime: null,
     noOfPatientsInLast7Days: null,
     availableOrNot: null,
-    weeklyAvailability: null
+    weeklyAvailability: null,
+    otherDoctorDetails: null
 }
 export const MediGSlice = createSlice({
     name: "userInfo",

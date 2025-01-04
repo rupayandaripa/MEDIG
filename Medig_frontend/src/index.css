@@ -66,3 +66,18 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* Custom styles for column hover effect */
+.column-content {
+  transition: background-color 0.3s ease; /* Smooth transition */
+}
+
+.hover-column {
+  background-color: #B2DFDB; /* Light teal shade for cells on hover */
+}
+
+.hover-column-header {
+  background-color: #10423d; /* Darker teal shade for header on hover */
+}
+
+

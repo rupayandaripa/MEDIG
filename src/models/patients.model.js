@@ -1,10 +1,26 @@
-import mongoose , {Schema} from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 const patientSchema = new Schema(
     {
+        phoneNumber: {
+            type: String,
+            required: true
+        },
+        emergencyNumber: {
+            type: String,
+            required: true
+        },
+        hostel: {
+            type: String,
+            required: true
+        },
+        email: {
+            type: String,
+            required: true
+        },
         dateOfBirth: {
             type: String,
-            require: true
+            required: true
         },
         rollNumber: {
             type: String,
@@ -35,8 +51,8 @@ const patientSchema = new Schema(
         medicalHistory: {
             type: Map,
             of: [String] //cloudinry url
-        }
+        },
     }
 )
 
-export const Patient = mongoose.model("Patient" , patientSchema)
+export const Patient = mongoose.model("Patient", patientSchema)

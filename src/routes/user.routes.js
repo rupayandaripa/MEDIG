@@ -19,7 +19,11 @@ import {
     changeCurrentAvailability,
     noOfPatientsInLast7Days,
     changeWeeklySchedule,
-    getDoctorDetails
+    getDoctorDetails,
+    getPatientDetails,
+    //uploadDocumentInAzure,
+    uploadDocumentInGoogleDrive,
+    sendEmailFromMediGId
 } from '../controllers/user.controller.js'
 
 import { ConfidentialClientApplication } from '@azure/msal-node';
@@ -33,78 +37,100 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 const router = Router()
 
-const msalConfig = {
-    auth: {
-        clientId: process.env.CLIENT_ID,
-        authority: `https://login.microsoftonline.com/${process.env.TENANT_ID}`,
-        clientSecret: process.env.CLIENT_SECRET,
-        redirectUri: process.env.REDIRECT_URI,
-    },
-};
+// const msalConfig = {
+//     auth: {
+//         clientId: process.env.CLIENT_ID,
+//         authority: `https://login.microsoftonline.com/${process.env.TENANT_ID}`,
+//         clientSecret: process.env.CLIENT_SECRET,
+//         redirectUri: process.env.REDIRECT_URI,
+//     },
+// };
 
-const confidentialClient = new ConfidentialClientApplication(msalConfig);
+// const confidentialClient = new ConfidentialClientApplication(msalConfig);
 
-router.route('/auth/login').get(
-    asyncHandler(async (req, res) => {
-        try {
-            const authUrl = await confidentialClient.getAuthCodeUrl({
-                scopes: ["Mail.Send", "User.Read", "SMTP.Send"],
-                redirectUri: msalConfig.auth.redirectUri,
-            });
-            console.log(authUrl)
-            // Redirect the user directly to the auth URL instead of sending it in JSON
-            return res.status(200).json({ authUrl })
-        } catch (error) {
-            console.error("Error generating auth URL:", error);
-            return res.status(500).send("Failed to generate authentication URL");
-        }
-    })
-);
+// // Step 1: Generate Auth URL
+// router.route('/auth/login').get(
+//     asyncHandler(async (req, res) => {
+//         try {
+//             const authUrl = await confidentialClient.getAuthCodeUrl({
+//                 scopes: ["Mail.Send", "User.Read", "offline_access"], // Add offline_access to get refresh tokens
+//                 redirectUri: msalConfig.auth.redirectUri,
+//             });
 
-router.route('/auth/callback').get(
-    asyncHandler(async (req, res) => {
-        const { code } = req.query;
+//             return res.redirect(authUrl);
+//         } catch (error) {
+//             console.error("Error generating auth URL:", error);
+//             return res.status(500).send("Failed to generate authentication URL");
+//         }
+//     })
+// );
 
-        //console.log("Code: " , code)
+// Step 2: Handle Callback and Acquire Token
+// router.route('/auth/callback').get(
+//     asyncHandler(async (req, res) => {
+//         const { code } = req.query;
 
-        if (!code) {
-            return res.status(400).send("Authorization code missing");
-        }
+//         if (!code) {
+//             return res.status(400).send("Authorization code missing");
+//         }
 
-        try {
-            const tokenResponse = await confidentialClient.acquireTokenByCode({
-                code,
-                scopes: [
-                    //"SMTP.Send",
-                    "Mail.Send",
-                    "User.Read",
-                ],
-                redirectUri: msalConfig.auth.redirectUri,
-                //prompt: "consent"
-            });
+//         try {
+//             const tokenResponse = await confidentialClient.acquireTokenByCode({
+//                 code,
+//                 scopes: ["Mail.Send", "User.Read", "offline_access"],
+//                 redirectUri: msalConfig.auth.redirectUri,
+//             });
 
-            // Store the tokens
-            req.session.accessToken = tokenResponse.accessToken;
-            if (tokenResponse.refreshToken) {
-                req.session.refreshToken = tokenResponse.refreshToken;
-            }
+//             const { accessToken, refreshToken, expiresOn } = tokenResponse;
 
-            console.log("AccessToken: ", req.session.accessToken)
+//             // Redirect back to frontend with token data
+//             res.redirect(
+//                 `http://localhost:3000?accessToken=${accessToken}&refreshToken=${refreshToken}&expiresOn=${expiresOn}`
+//             );
+//         } catch (error) {
+//             console.error("Error during token acquisition:", error);
+//             return res.status(500).send("Failed to acquire token");
+//         }
+//     })
+// );
 
-            return res.redirect("/doctor/send-mail");
-        } catch (error) {
-            console.error("Error during token acquisition:", error);
-            return res.status(500).send("Failed to acquire token");
-        }
-    })
-);
+
+// // Step 3: Refresh Access Token
+// router.route('/auth/refresh-token').post(
+//     asyncHandler(async (req, res) => {
+//         const { refreshToken } = req.body;
+
+//         if (!refreshToken) {
+//             return res.status(400).send("Refresh token missing");
+//         }
+
+//         try {
+//             const tokenResponse = await confidentialClient.acquireTokenByRefreshToken({
+//                 refreshToken,
+//                 scopes: ["Mail.Send", "User.Read"],
+//             });
+
+//             console.log("New access token:", tokenResponse.accessToken);
+
+//             return res.status(200).json({
+//                 accessToken: tokenResponse.accessToken,
+//                 expiresOn: tokenResponse.expiresOn,
+//             });
+//         } catch (error) {
+//             console.error("Error refreshing access token:", error);
+//             return res.status(500).send("Failed to refresh token");
+//         }
+//     })
+// );
+
 
 router.route('/doctor/send-mail').post(
     verifyJWT,
     checkRole('Doctor'),
     upload.single('prescription'),
-    sendEmailWithAttachment
+    //sendEmailWithAttachment
     //sendEmailWithAttachment1
+    sendEmailFromMediGId
 
 )
 
@@ -186,6 +212,25 @@ router.route('/get-doctor-details').get(
     getDoctorDetails
 )
 
+router.route('/get-patient-details').get(
+    verifyJWT,
+    checkRole('Doctor'),
+    getPatientDetails
+)
+
+// router.route('/upload-document-in-azure').put(
+//     verifyJWT,
+//     checkRole('Patient'),
+//     upload.single('medicalDocument'),
+//     uploadDocumentInAzure
+// )
+
+router.route('/upload-document-in-google-drive').post(
+    verifyJWT,
+    checkRole('Patient'),
+    upload.single('medicalDocument'),
+    uploadDocumentInGoogleDrive
+)
 
 
 

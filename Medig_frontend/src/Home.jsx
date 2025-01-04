@@ -38,9 +38,26 @@ export const Sidebar = () => {
         return currentPath.includes(itemPath);
     };
 
+    
+        
     const handleNavigation = (item) => {
         const path = item.toLowerCase();
-        navigate(path === 'dashboard' ? '' : path);
+        
+        function navigateUntilLayout() {
+            const currentPath = window.location.pathname;
+            const pathSegments = currentPath.split('/').filter(Boolean);
+            const lastWord = pathSegments[pathSegments.length - 1];
+            
+            if (lastWord !== 'layout') {
+                navigate(-1);
+                setTimeout(navigateUntilLayout, 100);
+                return;
+            }
+            
+            navigate(path === 'dashboard' ? '' : path);
+        }
+    
+        navigateUntilLayout();
     };
 
     return (
@@ -69,9 +86,9 @@ export const Sidebar = () => {
     );
 };
 
-const DoctorInfo = ({ name, specialization, role, age, gender, bloodType, workHours }) => (
+const DoctorInfo = ({ name, specialization, role, age, gender, bloodType, workHours , profilePicture }) => (
     <div className="bg-gray-100 p-4 rounded-lg flex items-start space-x-6 bg-gradient-to-b from-teal-100 to-white">
-        <img src={ProfilePicture} alt={name} className="w-20 h-20 rounded-full border-4 border-teal-500" />
+        <img src={profilePicture} alt={ProfilePicture} className="w-20 h-20 rounded-full border-4 border-teal-500" />
         <div>
             <h2 className="text-xl font-bold">{name}</h2>
             <p className="text-gray-600 italic">{specialization}</p>
@@ -224,6 +241,7 @@ const Home = () => {
     const Qualification = useSelector(state => state.degree)
     const position = useSelector(state => state.position)
     const Specialization = useSelector(state => state.specialization)
+    const profilePicture = useSelector(state => state.profilePicture)
 
     return (
         <div className="flex bg-gray-100 min-h-screen">
@@ -240,6 +258,7 @@ const Home = () => {
                             age={Age}
                             bloodType={BloodGroup}
                             workHours={[AvailableTime1, AvailableTime2]}
+                            profilePicture={profilePicture}
                         />
                         <PatientStatistics />
                         <HospitalOccupancy />

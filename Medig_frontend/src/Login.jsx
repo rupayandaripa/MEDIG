@@ -44,10 +44,20 @@ function Login() {
                 const doctorInfo = await doctorInfoResponse.json()
                 const doctorData = doctorInfo.data
 
+                const otherDoctorDetailsResponse = await fetch('http://localhost:8000/api/v0/users/other-doctor-schedule' , {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${accessToken}`}
+                })
+
+                const otherDoctorInfo = await otherDoctorDetailsResponse.json()
+                const otherDoctorData = otherDoctorInfo.data
+                console.log("Other doctor info" , otherDoctorData)
+
                 console.log("Doctor Data: " , doctorData)
                 
                 const mappedData = {
                     fullName: data.fullName,
+                    email: data.email,
                     profilePicture: data.profilePicture,
                     gender: data.gender,
                     role: data.role,
@@ -59,7 +69,9 @@ function Login() {
                     availableTime: doctorData.availableTime,
                     noOfPatientsInLast7Days: doctorData.noOfPatientsInLast7Days,
                     availableOrNot: doctorData.availableOrNot,
-                    weeklyAvailability: doctorData.weeklyAvailability
+                    weeklyAvailability: doctorData.weeklyAvailability,
+                    otherDoctorDetails: otherDoctorData,
+                    accessToken: accessToken
                 }
 
                 dispatch(changeData(mappedData))

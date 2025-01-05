@@ -3,11 +3,14 @@ import { Sun, Sun as SunDim, Moon } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import iitgLogo from '/iitgLogo.png'
+import { ApiError } from '../../src/utils/ApiError';
+import PageLoadingIndicator from './PageLoadingIndicator';
 
 const PrescriptionUI = () => {
 
     const prescriptionRef = useRef(null)
     //const [age, setAge] = useState('')
+    const [isLoading , setIsLoading] = useState(false)
 
     const date = new Date()
 
@@ -38,12 +41,18 @@ const PrescriptionUI = () => {
             formData.append("prescription", pdfBlob, "prescription.pdf");
             formData.append("email", patientDetails.email);
             formData.append("rollNumber", patientDetails.rollNumber || "");
+
+            const formData1 = new FormData()
+            formData1.append("prescription" , pdfBlob , `${formatDate(date)}.pdf`)
+            formData1.append("folderName", formatDate(date))
+            formData1.append("fileName" , formatTime(date))
     
             const emailResponse = await fetch("http://localhost:8000/api/v0/users/doctor/send-mail", {
                 method: "POST",
                 headers: { Authorization: `Bearer ${mappedData.accessToken}` },
                 body: formData,
             });
+
     
             if (!emailResponse.ok) {
                 const errorData = await emailResponse.json();
@@ -54,17 +63,35 @@ const PrescriptionUI = () => {
     
             const emailData = await emailResponse.json();
             console.log("Email sent successfully:", emailData);
+
+            const medicalHistoryUpdateResponse = await fetch("http://localhost:8000/api/v0/users/update-medical-history-in-google-drive" , {
+                method: "POST",
+                headers: {Authorization: `Bearer ${mappedData.accessToken}`},
+                body: formData1
+            })
+
+            if(!medicalHistoryUpdateResponse) {
+                throw new ApiError(400 , "Error in updating medical history")
+            }
+
             alert("Email sent successfully to the pharmacy!");
         } catch (error) {
             console.error("Error in the process:", error);
             alert("An error occurred. Please try again.");
         }
     };
-    
-    
-    
-    
 
+    const sendingFunction = async() => {
+
+        setIsLoading(true)
+        try {
+            await handleSendToPharmacy()
+        }
+        finally {
+            setIsLoading(false)
+        }
+
+    }
 
 
     const prescription = JSON.parse(localStorage.getItem('prescription'))
@@ -120,7 +147,8 @@ const PrescriptionUI = () => {
 
     return (
         <>
-            <div className="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-lg" ref={prescriptionRef}>
+            <PageLoadingIndicator isLoading={isLoading} />
+            <div className="max-w-3xl mx-auto p-6 bg-white shadow-lg" ref={prescriptionRef}>
                 <div className="bg-teal-800 text-white p-4 rounded-t-lg">
                     <div className="flex items-center gap-4">
                         <img src={iitgLogo} alt="Hospital Logo" className="w-12 h-12 rounded-full" />
@@ -192,17 +220,26 @@ const PrescriptionUI = () => {
                     </div>
                 </div>
 
-                <button className="w-full mt-6 bg-teal-700 text-white py-2 rounded-lg hover:bg-teal-800">
+                {/* <button className="w-full mt-6 bg-teal-700 text-white py-2 rounded-lg hover:bg-teal-800">
                     Close
-                </button>
+                </button> */}
             </div>
 
+            <div className='max-w-3xl flex justify-center mx-auto bg-white shadow-lg'>
+            <div className='items-center w-full'>
             <button
                 onClick={handleSendToPharmacy}
-                className='w-full mt-4 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700'
+                className='bg-teal-700 text-white p-4 rounded-lg hover:bg-teal-800 w-full'
             >
                 Send to Pharmacy
             </button>
+
+            </div>
+
+            </div>
+            
+
+            
         </>
 
     );

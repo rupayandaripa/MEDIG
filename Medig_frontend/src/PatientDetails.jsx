@@ -194,7 +194,10 @@ const PatientDetails = () => {
 
                     {/* Action Buttons */}
                     <div className="space-y-2">
-                      <button className="w-full bg-gray-900 text-white p-3 rounded-lg hover:bg-gray-800 transition-colors text-sm">
+                      <button 
+                      className="w-full bg-gray-900 text-white p-3 rounded-lg hover:bg-gray-800 transition-colors text-sm"
+                      onClick={() => {navigate('medicalHistory')}}
+                      >
                         View medical history
                       </button>
                       <button

@@ -23,7 +23,8 @@ import {
     getPatientDetails,
     //uploadDocumentInAzure,
     uploadDocumentInGoogleDrive,
-    sendEmailFromMediGId
+    sendEmailFromMediGId,
+    updateMedicalHistoryInGoogleDrive
 } from '../controllers/user.controller.js'
 
 import { ConfidentialClientApplication } from '@azure/msal-node';
@@ -230,6 +231,13 @@ router.route('/upload-document-in-google-drive').post(
     checkRole('Patient'),
     upload.single('medicalDocument'),
     uploadDocumentInGoogleDrive
+)
+
+router.route('/update-medical-history-in-google-drive').post(
+    verifyJWT,
+    checkRole('Doctor'),
+    upload.single('prescription'),
+    updateMedicalHistoryInGoogleDrive
 )
 
 

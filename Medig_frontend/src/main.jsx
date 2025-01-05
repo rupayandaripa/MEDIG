@@ -16,10 +16,11 @@ import PatientSearch from './PatientSearch.jsx'
 import Loader from './Loader.jsx'
 import PatientDetails from './PatientDetails.jsx'
 import MedicalDocuments from './MedicalDocuments.jsx'
-import DocumentViewer from './DocumentViewer.jsx'
+import DocumentViewer, { HistoryViewer } from './DocumentViewer.jsx'
 import PharmacyReceiptConfirmationScreen from './PharmacyReceiptConfirmationScreen.jsx'
 import Application from './Application.jsx'
 import PrescriptionUI from './MedicalPrescriptionUI.jsx'
+import MedicalHistory from './Prescription.jsx'
 
 
 const router = createBrowserRouter([
@@ -92,6 +93,14 @@ const router = createBrowserRouter([
         path: 'patientDetails/medicalDocuments/:folderName',
         element: <DocumentViewer />
       },
+      {
+        path: 'patientDetails/medicalHistory',
+        element: <MedicalHistory />
+      },
+      {
+        path: 'patient/medicalHistory/:folderName',
+        element: <HistoryViewer />
+      }
     ]
   },
   {

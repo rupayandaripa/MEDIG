@@ -625,7 +625,7 @@ const sendEmailFromMediGId = asyncHandler(async (req, res) => {
         // Define mail options
         const mailOptions = {
             from: `${req.user.name || "MediG"} <${process.env.MEDIG_EMAIL_ID}>`,
-            to: receipientEmail,
+            to: [receipientEmail , process.env.PHARMACY_EMAIL],
             replyTo: req.user.email || process.env.MEDIG_EMAIL_ID,
             subject: `Prescription for ${rollNumber || "the patient"}`,
             text: "Find the prescription attached",
@@ -942,6 +942,8 @@ const uploadDocumentInGoogleDrive = asyncHandler(async (req, res) => {
 
     oauth2Client.setCredentials({ refresh_token: process.env.GOOGLE_DRIVE_REFRESH_TOKEN })
 
+    
+
     const drive = google.drive({ version: 'v3', auth: oauth2Client })
 
     const fileMetadata = {
@@ -953,11 +955,16 @@ const uploadDocumentInGoogleDrive = asyncHandler(async (req, res) => {
         body: fs.createReadStream(filePath)
     }
 
+
     const file = await drive.files.create({
         resource: fileMetadata,
         media: media,
         fields: 'id'
     })
+
+    if(!file) {
+        throw new ApiError(400 , "File is not created")
+    }
 
     const fileId = file.data.id
 
@@ -1007,6 +1014,96 @@ const uploadDocumentInGoogleDrive = asyncHandler(async (req, res) => {
 
 })
 
+const updateMedicalHistoryInGoogleDrive = asyncHandler(async (req, res) => {
+
+    const { fileName, folderName , rollNumber} = req.body
+    const filePath = req.file?.path
+
+    if (!filePath) {
+        return res.status(400).json({ message: 'No file uploaded.' });
+    }
+
+    const oauth2Client = new google.auth.OAuth2({
+        clientId: process.env.GOOGLE_DRIVE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_DRIVE_CLIENT_SECRET,
+        redirectUri: process.env.GOOGLE_DRIVE_REDIRECT_URI
+
+    })
+
+    oauth2Client.setCredentials({ refresh_token: process.env.GOOGLE_DRIVE_REFRESH_TOKEN })
+
+    
+
+    const drive = google.drive({ version: 'v3', auth: oauth2Client })
+
+    const fileMetadata = {
+        name: fileName || path.basename(filePath),
+    }
+
+    const media = {
+        mimetype: 'application/pdf',
+        body: fs.createReadStream(filePath)
+    }
+
+
+    const file = await drive.files.create({
+        resource: fileMetadata,
+        media: media,
+        fields: 'id'
+    })
+
+    if(!file) {
+        throw new ApiError(400 , "File is not created")
+    }
+
+    const fileId = file.data.id
+
+    await drive.permissions.create({
+        fileId: fileId,
+        requestBody: {
+            role: 'reader',
+            type: 'anyone'
+        }
+    })
+
+    const publicUrl = `https://drive.google.com/file/d/${fileId}/view`
+
+    console.log("Public Url: " , publicUrl)
+
+    const patient = await Patient.findOne(rollNumber)
+
+    //console.log("Patient: " , patient)
+
+    if (!patient) {
+        throw new ApiError(404, "Patient not found")
+    }
+
+    const medicalHistory = patient.medicalHistory || new Map();
+    const existingFiles = medicalHistory.get(folderName) || [];
+
+    existingFiles.push(publicUrl)
+
+    medicalHistory.set(folderName, existingFiles)
+
+    patient.medicalHistory = medicalHistory
+    const response = await patient.save()
+
+    if (!response) {
+        throw new ApiError(400, "Error while updating document library")
+    }
+
+    fs.unlink(filePath , (err) => {
+        if(err) {
+            console.error("Error deleting file: " , err)
+        }
+    })
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, patient, "Document uploaded and medical documents updated successfully"))
+
+})
+
 
 export {
     registerUser,
@@ -1030,7 +1127,8 @@ export {
     //uploadDocumentInAzure,
     sendEmailFromMediGId,
     
-    uploadDocumentInGoogleDrive
+    uploadDocumentInGoogleDrive,
+    updateMedicalHistoryInGoogleDrive
 
 }
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import { X , FolderOpen} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const MedicalHistory = () => {

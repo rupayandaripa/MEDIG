@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState} from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { File, ArrowLeft, X, AlertCircle } from 'lucide-react';
+
 
 const DocumentViewer = () => {
   const { folderName } = useParams();
@@ -292,6 +293,6 @@ const HistoryViewer = () => {
   );
 };
 
-export default DocumentViewer;
 
-export {HistoryViewer}
+
+export {HistoryViewer , DocumentViewer}

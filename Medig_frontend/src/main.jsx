@@ -16,7 +16,7 @@ import PatientSearch from './PatientSearch.jsx'
 import Loader from './Loader.jsx'
 import PatientDetails from './PatientDetails.jsx'
 import MedicalDocuments from './MedicalDocuments.jsx'
-import DocumentViewer, { HistoryViewer } from './DocumentViewer.jsx'
+import { HistoryViewer , DocumentViewer} from './DocumentViewer.jsx'
 import PharmacyReceiptConfirmationScreen from './PharmacyReceiptConfirmationScreen.jsx'
 import Application from './Application.jsx'
 import PrescriptionUI from './MedicalPrescriptionUI.jsx'
@@ -98,7 +98,7 @@ const router = createBrowserRouter([
         element: <MedicalHistory />
       },
       {
-        path: 'patient/medicalHistory/:folderName',
+        path: 'patientDetails/medicalHistory/:folderName',
         element: <HistoryViewer />
       }
     ]
